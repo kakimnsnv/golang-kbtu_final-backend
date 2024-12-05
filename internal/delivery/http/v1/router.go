@@ -1,23 +1,12 @@
 package http_v1
 
 import (
+	"final/internal/delivery/http/v1/routes"
+	auth_interface "final/internal/features/auth/interface"
+
 	"github.com/gin-gonic/gin"
-	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
-
-var RouterModule = fx.Options(
-	fx.Provide(NewRouter),
-	fx.Invoke(RegisterRoutes),
-)
-
-// NewRouter initializes the Gin engine.
-func NewRouter(logger *zap.Logger) *gin.Engine {
-	gin.SetMode(gin.ReleaseMode) // Set mode to "release" for production
-	router := gin.New()
-
-	return router
-}
 
 // GinLogger is a middleware that logs HTTP requests using zap.
 func GinLogger(logger *zap.Logger) gin.HandlerFunc {
@@ -31,9 +20,31 @@ func GinLogger(logger *zap.Logger) gin.HandlerFunc {
 }
 
 // RegisterRoutes registers the API routes.
-func RegisterRoutes(router *gin.Engine) {
+func NewRouter(logger *zap.Logger, authUsecase auth_interface.AuthUsecase) *gin.Engine {
+	gin.SetMode(gin.ReleaseMode) // Set mode to "release" for production
+	router := gin.Default()
+
+	api := router.Group("/api/v1")
+
 	// Example: Health check route
-	router.GET("/health", func(c *gin.Context) {
+	api.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "healthy"})
 	})
+
+	auth := api.Group("/auth")
+	{
+		routes.NewAuthRoute(auth, logger, authUsecase)
+	}
+
+	// authorizedAccess := api.Group("/", middlewares.AuthMiddleware(logger))
+	// {
+	// 	authorizedAccess.GET("/admin", middlewares.RoleMiddleware(logger, auth.RoleAdmin), func(c *gin.Context) {
+	// 		c.JSON(200, gin.H{"message": "Admin access granted"})
+	// 	})
+
+	// 	authorizedAccess.GET("/dashboard", middlewares.RoleMiddleware(logger, auth.RoleUser|auth.RoleAdmin), func(c *gin.Context) {
+	// 		c.JSON(200, gin.H{"message": "Welcom User or Admin!"})
+	// 	})
+	// }
+	return router
 }

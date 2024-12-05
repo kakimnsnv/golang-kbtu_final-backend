@@ -3,20 +3,45 @@ package main
 import (
 	"context"
 	http_v1 "final/internal/delivery/http/v1"
+	auth_interface "final/internal/features/auth/interface"
+	auth_repo "final/internal/features/auth/repo"
+	auth_usecase "final/internal/features/auth/usecase"
 	"final/internal/infrastructure"
+	"final/internal/infrastructure/db_gen"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	app := fx.New(
-		http_v1.RouterModule,
-		infrastructure.LoggerModule,
+		fx.Provide(
+
+			zap.NewProduction,
+			fx.Annotate(
+				auth_repo.New,
+				fx.As(new(auth_interface.AuthRepo)),
+			),
+			fx.Annotate(
+				auth_usecase.New,
+				fx.As(new(auth_interface.AuthUsecase)),
+			),
+			http_v1.NewRouter,
+			fx.Annotate(
+				infrastructure.NewDB,
+				fx.As(new(db_gen.DBTX)),
+			),
+			db_gen.New,
+		),
 		fx.Invoke(StartServer),
 	)
 
