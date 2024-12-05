@@ -16,12 +16,7 @@ func NewRouter(logger *zap.Logger) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode) // Set mode to "release" for production
 	router := gin.New()
 
-	api := router.Group("/api/v1")
-
-	// Add middleware
-	api.Use(gin.Recovery()) // Recovers from panics and writes a 500 response
-	api.Use(GinLogger(logger))
-	return api
+	return router
 }
 
 // GinLogger is a middleware that logs HTTP requests using zap.
