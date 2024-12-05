@@ -7,10 +7,16 @@ migrate_create:
 	@migrate create -ext sql -dir db/migrations $(filter-out $@,$(MAKECMDGOALS))
 
 migrate_up:
-	@migrate -path db/migrations -database $(DB_DSN)?sslmode=disable up
+	@migrate -path db/migrations -database $(DB_DSN)?sslmode=disable up $(filter-out $@,$(MAKECMDGOALS))
 
 migrate_down:
-	@migrate -path db/migrations -database $(DB_DSN)?sslmode=disable down
+	@migrate -path db/migrations -database $(DB_DSN)?sslmode=disable down $(filter-out $@,$(MAKECMDGOALS))
+
+migrate_version:
+	@migrate -path db/migrations -database $(DB_DSN)?sslmode=disable version
+
+migrate_force:
+	@migrate -path db/migrations -database $(DB_DSN)?sslmode=disable force $(filter-out $@,$(MAKECMDGOALS))
 
 sqlc_generate:
 	@sqlc generate

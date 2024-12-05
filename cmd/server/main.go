@@ -6,6 +6,9 @@ import (
 	auth_interface "final/internal/features/auth/interface"
 	auth_repo "final/internal/features/auth/repo"
 	auth_usecase "final/internal/features/auth/usecase"
+	product_interface "final/internal/features/product/interface"
+	product_repo "final/internal/features/product/repo"
+	product_usecase "final/internal/features/product/usecase"
 	"final/internal/infrastructure"
 	"final/internal/infrastructure/db_gen"
 	"log"
@@ -25,7 +28,6 @@ func main() {
 
 	app := fx.New(
 		fx.Provide(
-
 			zap.NewProduction,
 			fx.Annotate(
 				auth_repo.New,
@@ -34,6 +36,14 @@ func main() {
 			fx.Annotate(
 				auth_usecase.New,
 				fx.As(new(auth_interface.AuthUsecase)),
+			),
+			fx.Annotate(
+				product_repo.New,
+				fx.As(new(product_interface.ProductRepo)),
+			),
+			fx.Annotate(
+				product_usecase.New,
+				fx.As(new(product_interface.ProductUseCase)),
 			),
 			http_v1.NewRouter,
 			fx.Annotate(

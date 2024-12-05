@@ -3,6 +3,7 @@ package http_v1
 import (
 	"final/internal/delivery/http/v1/routes"
 	auth_interface "final/internal/features/auth/interface"
+	product_interface "final/internal/features/product/interface"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -20,7 +21,7 @@ func GinLogger(logger *zap.Logger) gin.HandlerFunc {
 }
 
 // RegisterRoutes registers the API routes.
-func NewRouter(logger *zap.Logger, authUsecase auth_interface.AuthUsecase) *gin.Engine {
+func NewRouter(logger *zap.Logger, authUsecase auth_interface.AuthUsecase, productUsecase product_interface.ProductUseCase) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode) // Set mode to "release" for production
 	router := gin.Default()
 
@@ -32,8 +33,12 @@ func NewRouter(logger *zap.Logger, authUsecase auth_interface.AuthUsecase) *gin.
 	})
 
 	auth := api.Group("/auth")
-	{
+	{ // MARK: Auth routes
 		routes.NewAuthRoute(auth, logger, authUsecase)
+	}
+
+	{ // MARK: Product routes //TODO: add middleware for auth and role
+		routes.NewProductRoute(api, logger, productUsecase)
 	}
 
 	// authorizedAccess := api.Group("/", middlewares.AuthMiddleware(logger))

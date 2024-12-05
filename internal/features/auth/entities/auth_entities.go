@@ -36,8 +36,8 @@ func FromDBUser(dbUser db_gen.User) User {
 	return User{
 		ID:           dbUser.ID,
 		Email:        dbUser.Email,
-		CreatedAt:    dbUser.CreatedAt.Time,
-		UpdatedAt:    dbUser.UpdatedAt.Time,
+		CreatedAt:    dbUser.CreatedAt,
+		UpdatedAt:    dbUser.UpdatedAt,
 		PasswordHash: dbUser.PasswordHash,
 		Role:         auth.Role(dbUser.Role),
 	}
