@@ -33,16 +33,17 @@ func AuthMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	}
 }
 
-func decodeTokenAndGetRole(token string) (auth.Role, error) {
+func decodeTokenAndGetRole(token string) (int, error) {
 	claims, err := auth.ParseJWT(token)
 	if err != nil {
-		return auth.RoleNone, err
+		return 0, err
+	}
+	val, ok := claims[consts.ClaimsRole].(float64)
+	if !ok {
+		return 0, errors.New(consts.ErrInvalidRole)
 	}
 
-	role, ok := claims[consts.ClaimsRole].(auth.Role)
-	if !ok {
-		return auth.RoleNone, errors.New(consts.ErrInvalidRole)
-	}
+	role := int(val)
 
 	return role, nil
 }

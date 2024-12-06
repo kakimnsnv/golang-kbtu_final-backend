@@ -21,8 +21,14 @@ migrate_force:
 sqlc_generate:
 	@sqlc generate
 
-docker_run_db:
+docker_create_db:
 	@docker run -p 5432:5432 -d --name golang-final-db  -e POSTGRES_PASSWORD=Sadasa2015 -e POSTGRES_USER=kakimbekn -e POSTGRES_DB=golang-final postgres
+
+docker_start_db:
+	@docker start golang-final-db
+	
+docker_stop_db:
+	@docker stop golang-final-db
 
 # neccessary to use arguments in makefile
 %:

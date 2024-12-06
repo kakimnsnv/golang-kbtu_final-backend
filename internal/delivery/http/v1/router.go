@@ -22,12 +22,11 @@ func GinLogger(logger *zap.Logger) gin.HandlerFunc {
 
 // RegisterRoutes registers the API routes.
 func NewRouter(logger *zap.Logger, authUsecase auth_interface.AuthUsecase, productUsecase product_interface.ProductUseCase) *gin.Engine {
-	gin.SetMode(gin.ReleaseMode) // Set mode to "release" for production
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	api := router.Group("/api/v1")
 
-	// Example: Health check route
 	api.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "healthy"})
 	})

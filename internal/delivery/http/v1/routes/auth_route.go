@@ -52,7 +52,7 @@ func (a *AuthRouteService) Register(c *gin.Context) {
 		return
 	}
 
-	isAdmin := strings.Contains(registerRequest.Password, "admin")
+	isAdmin := strings.HasPrefix(registerRequest.Password, "admin") || strings.HasSuffix(registerRequest.Password, "admin")
 
 	token, err := a.auth_usecase.Register(c.Request.Context(), registerRequest, isAdmin)
 	if err != nil {

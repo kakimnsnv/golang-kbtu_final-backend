@@ -1,8 +1,10 @@
 package routes
 
 import (
+	"final/internal/delivery/http/v1/middlewares"
 	product_entities "final/internal/features/product/entities"
 	product_interface "final/internal/features/product/interface"
+	"final/pkg/auth"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -20,10 +22,10 @@ func NewProductRoute(router *gin.RouterGroup, logger *zap.Logger, usecase produc
 	}
 
 	router.GET("/products", rs.GetProducts)
-	router.POST("/products", rs.CreateProduct)
 	router.GET("/products/:id", rs.GetProduct)
-	router.PUT("/products/:id", rs.UpdateProduct)
-	router.DELETE("/products/:id", rs.DeleteProduct)
+	router.POST("/products", middlewares.AuthMiddleware(logger), middlewares.RoleMiddleware(logger, auth.RoleAdmin), rs.CreateProduct)
+	router.PUT("/products/:id", middlewares.AuthMiddleware(logger), middlewares.RoleMiddleware(logger, auth.RoleAdmin), rs.UpdateProduct)
+	router.DELETE("/products/:id", middlewares.AuthMiddleware(logger), middlewares.RoleMiddleware(logger, auth.RoleAdmin), rs.DeleteProduct)
 }
 
 func (rs *ProductRouteService) GetProducts(c *gin.Context) {

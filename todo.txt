@@ -1,0 +1,9 @@
+// TODO:
+
+
+trending products
+trending products: implement paging with cursor
+
+get products: implement paging with cursor
+
+cart, buying etc.
