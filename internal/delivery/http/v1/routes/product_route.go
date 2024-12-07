@@ -21,8 +21,13 @@ func NewProductRoute(router *gin.RouterGroup, logger *zap.Logger, usecase produc
 		usecase: usecase,
 	}
 
+	// Collections
 	router.GET("/products", rs.GetProducts)
+	router.GET("/trending", rs.GetProducts) // TODO: Implement trending products
+
 	router.GET("/products/:id", rs.GetProduct)
+
+	// Admin
 	router.POST("/products", middlewares.AuthMiddleware(logger), middlewares.RoleMiddleware(logger, auth.RoleAdmin), rs.CreateProduct)
 	router.PUT("/products/:id", middlewares.AuthMiddleware(logger), middlewares.RoleMiddleware(logger, auth.RoleAdmin), rs.UpdateProduct)
 	router.DELETE("/products/:id", middlewares.AuthMiddleware(logger), middlewares.RoleMiddleware(logger, auth.RoleAdmin), rs.DeleteProduct)

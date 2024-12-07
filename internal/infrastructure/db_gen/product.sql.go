@@ -12,7 +12,7 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :one
-INSERT INTO products (name, price, description) VALUES ($1, $2, $3) RETURNING id, name, description, price, created_at, updated_at
+INSERT INTO products (name, price, description) VALUES ($1, $2, $3) RETURNING id, name, description, price, created_at, updated_at, deleted_at
 `
 
 type CreateProductParams struct {
@@ -31,12 +31,13 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.Price,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const deleteProduct = `-- name: DeleteProduct :one
-DELETE FROM products WHERE id = $1 RETURNING id, name, description, price, created_at, updated_at
+DELETE FROM products WHERE id = $1 RETURNING id, name, description, price, created_at, updated_at, deleted_at
 `
 
 func (q *Queries) DeleteProduct(ctx context.Context, id uuid.UUID) (Product, error) {
@@ -49,12 +50,13 @@ func (q *Queries) DeleteProduct(ctx context.Context, id uuid.UUID) (Product, err
 		&i.Price,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const getProductById = `-- name: GetProductById :one
-SELECT id, name, description, price, created_at, updated_at FROM products WHERE id = $1
+SELECT id, name, description, price, created_at, updated_at, deleted_at FROM products WHERE id = $1
 `
 
 func (q *Queries) GetProductById(ctx context.Context, id uuid.UUID) (Product, error) {
@@ -67,12 +69,13 @@ func (q *Queries) GetProductById(ctx context.Context, id uuid.UUID) (Product, er
 		&i.Price,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT id, name, description, price, created_at, updated_at FROM products
+SELECT id, name, description, price, created_at, updated_at, deleted_at FROM products
 `
 
 func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
@@ -91,6 +94,7 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 			&i.Price,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -103,7 +107,7 @@ func (q *Queries) GetProducts(ctx context.Context) ([]Product, error) {
 }
 
 const updateProduct = `-- name: UpdateProduct :one
-UPDATE products SET name = $1, price = $2, description = $3 WHERE id = $4 RETURNING id, name, description, price, created_at, updated_at
+UPDATE products SET name = $1, price = $2, description = $3 WHERE id = $4 RETURNING id, name, description, price, created_at, updated_at, deleted_at
 `
 
 type UpdateProductParams struct {
@@ -128,6 +132,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.Price,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
