@@ -22,11 +22,17 @@ func New(logger *zap.Logger, repo product_interface.ProductRepo) *ProductUseCase
 	}
 }
 
-func (u *ProductUseCaseImpl) GetProductByID(ctx context.Context, id string) (product_entities.Product, error) {
+func (u *ProductUseCaseImpl) GetProductByID(ctx context.Context, id string, userID ...string) (product_entities.Product, error) {
+	if len(userID) > 0 {
+		return u.repo.GetProductByIDForUser(ctx, id, userID[0])
+	}
 	return u.repo.GetProductByID(ctx, id)
 }
 
-func (u *ProductUseCaseImpl) GetAllProducts(ctx context.Context) ([]product_entities.Product, error) {
+func (u *ProductUseCaseImpl) GetAllProducts(ctx context.Context, userID ...string) ([]product_entities.Product, error) {
+	if len(userID) > 0 {
+		return u.repo.GetAllProductsForUser(ctx, userID[0])
+	}
 	return u.repo.GetAllProducts(ctx)
 }
 
@@ -40,4 +46,12 @@ func (u *ProductUseCaseImpl) UpdateProduct(ctx context.Context, id string, produ
 
 func (u *ProductUseCaseImpl) DeleteProduct(ctx context.Context, id string) error {
 	return u.repo.DeleteProduct(ctx, id)
+}
+
+func (u *ProductUseCaseImpl) LikeProduct(ctx context.Context, userID, productID string) error {
+	return u.repo.LikeProduct(ctx, userID, productID)
+}
+
+func (u *ProductUseCaseImpl) UnlikeProduct(ctx context.Context, userID, productID string) error {
+	return u.repo.UnlikeProduct(ctx, userID, productID)
 }

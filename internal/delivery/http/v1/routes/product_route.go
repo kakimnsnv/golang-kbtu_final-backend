@@ -1,10 +1,12 @@
 package routes
 
 import (
+	"final/common/consts"
 	"final/internal/delivery/http/v1/middlewares"
 	product_entities "final/internal/features/product/entities"
 	product_interface "final/internal/features/product/interface"
 	"final/pkg/auth"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -27,6 +29,10 @@ func NewProductRoute(router *gin.RouterGroup, logger *zap.Logger, usecase produc
 
 	router.GET("/products/:id", rs.GetProduct)
 
+	// User
+	router.POST("/products/:id/like", middlewares.AuthMiddleware(logger), rs.LikeProduct)
+	router.POST("/products/:id/unlike", middlewares.AuthMiddleware(logger), rs.UnlikeProduct)
+
 	// Admin
 	router.POST("/products", middlewares.AuthMiddleware(logger), middlewares.RoleMiddleware(logger, auth.RoleAdmin), rs.CreateProduct)
 	router.PUT("/products/:id", middlewares.AuthMiddleware(logger), middlewares.RoleMiddleware(logger, auth.RoleAdmin), rs.UpdateProduct)
@@ -34,14 +40,32 @@ func NewProductRoute(router *gin.RouterGroup, logger *zap.Logger, usecase produc
 }
 
 func (rs *ProductRouteService) GetProducts(c *gin.Context) {
-	products, err := rs.usecase.GetAllProducts(c.Request.Context())
-	if err != nil {
-		rs.logger.Error("Failed to get products", zap.Error(err))
-		c.JSON(500, gin.H{"error": "Failed to get products"})
-		return
-	}
+	authHeader := c.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		products, err := rs.usecase.GetAllProducts(c.Request.Context())
+		if err != nil {
+			rs.logger.Error("Failed to get products", zap.Error(err))
+			c.JSON(500, gin.H{"error": "Failed to get products"})
+			return
+		}
 
-	c.JSON(200, products)
+		c.JSON(200, products)
+	} else {
+		userID, _, err := middlewares.DecodeTokenAndGetIDAndRole(authHeader)
+		if err != nil {
+			rs.logger.Error("Failed to decode token", zap.Error(err))
+			c.JSON(401, gin.H{"error": "Unauthorized"})
+			return
+		}
+		products, err := rs.usecase.GetAllProducts(c.Request.Context(), userID)
+		if err != nil {
+			rs.logger.Error("Failed to get products", zap.Error(err))
+			c.JSON(500, gin.H{"error": "Failed to get products"})
+			return
+		}
+
+		c.JSON(200, products)
+	}
 }
 
 func (rs *ProductRouteService) CreateProduct(c *gin.Context) {
@@ -63,15 +87,32 @@ func (rs *ProductRouteService) CreateProduct(c *gin.Context) {
 }
 
 func (rs *ProductRouteService) GetProduct(c *gin.Context) {
-	id := c.Param("id")
-	product, err := rs.usecase.GetProductByID(c.Request.Context(), id)
-	if err != nil {
-		rs.logger.Error("Failed to get product", zap.Error(err))
-		c.JSON(500, gin.H{"error": "Failed to get product"})
-		return
-	}
+	authHeader := c.Request.Header.Get("Authorization")
+	if authHeader == "" {
+		id := c.Param("id")
+		product, err := rs.usecase.GetProductByID(c.Request.Context(), id)
+		if err != nil {
+			rs.logger.Error("Failed to get product", zap.Error(err))
+			c.JSON(500, gin.H{"error": "Failed to get product"})
+			return
+		}
 
-	c.JSON(200, product)
+		c.JSON(200, product)
+	} else {
+		userID, _, err := middlewares.DecodeTokenAndGetIDAndRole(authHeader)
+		if err != nil {
+			rs.logger.Error("Failed to decode token", zap.Error(err))
+			c.JSON(401, gin.H{"error": "Unauthorized"})
+			return
+		}
+		product, err := rs.usecase.GetProductByID(c.Request.Context(), c.Param("id"), userID)
+		if err != nil {
+			rs.logger.Error("Failed to get product", zap.Error(err))
+			c.JSON(500, gin.H{"error": "Failed to get product"})
+			return
+		}
+		c.JSON(200, product)
+	}
 }
 
 func (rs *ProductRouteService) UpdateProduct(c *gin.Context) {
@@ -103,4 +144,30 @@ func (rs *ProductRouteService) DeleteProduct(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"message": "Product deleted"})
+}
+
+func (rs *ProductRouteService) LikeProduct(c *gin.Context) {
+	id := c.Param("id")
+	userID := c.GetString(consts.ContextUserID)
+
+	if err := rs.usecase.LikeProduct(c.Request.Context(), userID, id); err != nil {
+		rs.logger.Error("Failed to like product", zap.Error(err))
+		c.JSON(500, gin.H{"error": "Failed to like product"})
+		return
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{"message": "Product liked"})
+}
+
+func (rs *ProductRouteService) UnlikeProduct(c *gin.Context) {
+	id := c.Param("id")
+	userID := c.GetString(consts.ContextUserID)
+
+	if err := rs.usecase.UnlikeProduct(c.Request.Context(), userID, id); err != nil {
+		rs.logger.Error("Failed to unlike product", zap.Error(err))
+		c.JSON(500, gin.H{"error": "Failed to unlike product"})
+		return
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{"message": "Product unliked"})
 }

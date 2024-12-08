@@ -26,7 +26,7 @@ func AuthMiddleware(logger *zap.Logger) gin.HandlerFunc {
 			return
 		}
 
-		userID, userRole, err := decodeTokenAndGetRole(token)
+		userID, userRole, err := DecodeTokenAndGetIDAndRole(token)
 		if err != nil {
 			logger.Error("Failed to decode token", zap.Error(err))
 			c.JSON(http.StatusUnauthorized, gin.H{"error": consts.ErrUnauthorized})
@@ -40,7 +40,7 @@ func AuthMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	}
 }
 
-func decodeTokenAndGetRole(tokenStr string) (string, int, error) {
+func DecodeTokenAndGetIDAndRole(tokenStr string) (string, int, error) {
 	token := strings.Split(tokenStr, "Bearer ")[1]
 
 	claims, err := auth.ParseJWT(token)
@@ -60,4 +60,11 @@ func decodeTokenAndGetRole(tokenStr string) (string, int, error) {
 	role := int(val)
 
 	return userID, role, nil
+}
+
+func MaybeAuthMiddleware(logger *zap.Logger) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if token := c.GetHeader(consts.HTTPAuthorizationHeader); token != "" {
+		}
+	}
 }

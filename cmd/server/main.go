@@ -2,6 +2,14 @@ package main
 
 import (
 	"context"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
+	"go.uber.org/zap"
+
 	http_v1 "final/internal/delivery/http/v1"
 	auth_interface "final/internal/features/auth/interface"
 	auth_repo "final/internal/features/auth/repo"
@@ -14,20 +22,12 @@ import (
 	product_usecase "final/internal/features/product/usecase"
 	"final/pkg/postgres"
 	"final/pkg/redis"
-	"log"
-	"net/http"
-	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
-	"go.uber.org/fx"
-	"go.uber.org/zap"
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	log.Fatal("Error loading .env file")
+	// }
 
 	app := fx.New(
 		fx.Provide(
