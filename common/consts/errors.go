@@ -13,6 +13,7 @@ const (
 	ErrTokenInvalid        = "invalid token"
 	ErrUserNotFound        = "user not found"
 	ErrInvalidRole         = "invalid role"
+	ErrInvalidUserID       = "invalid user id"
 	ErrForbidden           = "Forbidden : insufficient permissions"
 	ErrBadRequest          = "bad request"
 )

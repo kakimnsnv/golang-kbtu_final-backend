@@ -4,21 +4,21 @@ import (
 	"context"
 	auth_entities "final/internal/features/auth/entities"
 	auth_interface "final/internal/features/auth/interface"
-	"final/internal/infrastructure/db_gen"
 	"final/pkg/auth"
 
+	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthRepoImpl struct {
 	logger *zap.Logger
-	db     *db_gen.Queries
+	db     *sqlx.DB
 }
 
 var _ auth_interface.AuthRepo = (*AuthRepoImpl)(nil)
 
-func New(logger *zap.Logger, db *db_gen.Queries) *AuthRepoImpl {
+func New(logger *zap.Logger, db *sqlx.DB) *AuthRepoImpl {
 	return &AuthRepoImpl{
 		logger: logger,
 		db:     db,
@@ -26,13 +26,15 @@ func New(logger *zap.Logger, db *db_gen.Queries) *AuthRepoImpl {
 }
 
 func (r *AuthRepoImpl) GetUserByEmail(ctx context.Context, email string) (auth_entities.User, error) {
-	dbUser, err := r.db.GetUserByEmail(ctx, email)
-	if err != nil {
+	var dbUser auth_entities.User
+	const q = `SELECT * FROM users WHERE email = $1`
+
+	if err := r.db.GetContext(ctx, &dbUser, q, email); err != nil {
 		r.logger.Error("failed to get user by email", zap.Error(err))
 		return auth_entities.User{}, err
 	}
 
-	return auth_entities.FromDBUser(dbUser), nil
+	return dbUser, nil
 }
 
 func (r *AuthRepoImpl) CreateUser(ctx context.Context, email, password string, role auth.Role) (auth_entities.User, error) {
@@ -41,14 +43,13 @@ func (r *AuthRepoImpl) CreateUser(ctx context.Context, email, password string, r
 		r.logger.Error("failed to hash password", zap.Error(err))
 		return auth_entities.User{}, err
 	}
-	user, err := r.db.CreateUser(ctx, db_gen.CreateUserParams{
-		Email:        email,
-		PasswordHash: string(hashedPassword),
-		Role:         int32(role),
-	})
-	if err != nil {
+
+	const q = `INSERT INTO users (email, password_hash, role) VALUES ($1, $2, $3) RETURNING *`
+	var dbUser auth_entities.User
+
+	if err := r.db.GetContext(ctx, &dbUser, q, email, hashedPassword, role); err != nil {
 		r.logger.Error("failed to create user", zap.Error(err))
 		return auth_entities.User{}, err
 	}
-	return auth_entities.FromDBUser(user), nil
+	return dbUser, nil
 }

@@ -1,7 +1,6 @@
 package auth_entities
 
 import (
-	"final/internal/infrastructure/db_gen"
 	"final/pkg/auth"
 	"time"
 
@@ -10,35 +9,23 @@ import (
 
 type (
 	LoginRequest struct {
-		Email    string `json:"email" binding:"required"`
+		Email    string `json:"email" binding:"required,email"`
 		Password string `json:"password" binding:"required"`
 	}
 
 	RegisterRequest struct {
-		Email    string `json:"email" binding:"required"`
-		Password string `json:"password" binding:"required"`
+		Email    string `json:"email" binding:"required,email"`
+		Password string `json:"password" binding:"required,min=8"`
 	}
 
 	Token string
 
 	User struct {
-		ID           uuid.UUID `json:"id"`
-		Email        string    `json:"email"`
-		CreatedAt    time.Time `json:"created_at"`
-		UpdatedAt    time.Time `json:"updated_at"`
-		PasswordHash string    `json:"-"`
-		Role         auth.Role `json:"role"`
+		ID           uuid.UUID `db:"id" json:"id" binding:"required,uuid"`
+		Email        string    `db:"email" json:"email" binding:"required,email"`
+		PasswordHash string    `db:"password_hash" json:"-" binding:"required"`
+		Role         auth.Role `db:"role" json:"role" binding:"required"`
+		CreatedAt    time.Time `db:"created_at" json:"created_at" binding:"required"`
+		UpdatedAt    time.Time `db:"updated_at" json:"updated_at" binding:"required"`
 	}
 )
-
-// MARK: Mappers
-func FromDBUser(dbUser db_gen.User) User {
-	return User{
-		ID:           dbUser.ID,
-		Email:        dbUser.Email,
-		CreatedAt:    dbUser.CreatedAt,
-		UpdatedAt:    dbUser.UpdatedAt,
-		PasswordHash: dbUser.PasswordHash,
-		Role:         auth.Role(dbUser.Role),
-	}
-}

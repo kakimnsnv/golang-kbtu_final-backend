@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS user_carts (
 
 CREATE TABLE IF NOT EXISTS cart_items (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    cart_id UUID NOT NULL REFERENCES user_carts(id),
+    cart_id UUID NOT NULL REFERENCES user_carts(id) ON DELETE CASCADE,
     product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     quantity INT NOT NULL,
     total_price DECIMAL,

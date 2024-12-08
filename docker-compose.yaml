@@ -1,0 +1,55 @@
+services:
+  e-commerce-gin:
+    container_name: e-commerce-gin-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - golang-final-network
+    depends_on:
+      - postgre-db
+      - redis
+
+  postgre-db:
+    image: "postgres:15"
+    container_name: golang-final-db
+    environment:
+      - POSTGRES_DB=golang-final
+      - POSTGRES_USER=kakimbekn
+      - POSTGRES_PASSWORD=Sadasa2015
+    ports:
+      - "5432:5432"
+    networks:
+      - golang-final-network
+
+  prometheus:
+    container_name: prometheus-service
+    image: prom/prometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - golang-final-network
+
+  grafana:
+    container_name: grafana-service
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - golang-final-network
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - golang-final-network
+
+networks:
+  golang-final-network:
+    driver: bridge

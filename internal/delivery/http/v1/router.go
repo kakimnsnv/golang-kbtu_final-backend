@@ -1,29 +1,31 @@
 package http_v1
 
 import (
+	"final/internal/delivery/http/v1/middlewares"
 	"final/internal/delivery/http/v1/routes"
 	auth_interface "final/internal/features/auth/interface"
+	cart_interface "final/internal/features/cart/interface"
 	product_interface "final/internal/features/product/interface"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
 
-// GinLogger is a middleware that logs HTTP requests using zap.
-func GinLogger(logger *zap.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		logger.Info("Incoming request",
-			zap.String("method", c.Request.Method),
-			zap.String("path", c.Request.URL.Path),
-		)
-		c.Next()
-	}
-}
-
 // RegisterRoutes registers the API routes.
-func NewRouter(logger *zap.Logger, authUsecase auth_interface.AuthUsecase, productUsecase product_interface.ProductUseCase) *gin.Engine {
+func NewRouter(logger *zap.Logger, authUsecase auth_interface.AuthUsecase, productUsecase product_interface.ProductUseCase, cartUsecase cart_interface.CartUsecase) *gin.Engine {
+	// MARK: create Router
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
+
+	// MARK: Register metrics
+	middlewares.RegisterMetrics()
+
+	// MARK: Register Prometheus middleware
+	router.Use(middlewares.PrometheusMiddleware())
+
+	// MARK: Register Prometheus metrics
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	api := router.Group("/api/v1")
 
@@ -36,8 +38,12 @@ func NewRouter(logger *zap.Logger, authUsecase auth_interface.AuthUsecase, produ
 		routes.NewAuthRoute(auth, logger, authUsecase)
 	}
 
-	{ // MARK: Product routes //TODO: add middleware for auth and role
+	{ // MARK: Product routes
 		routes.NewProductRoute(api, logger, productUsecase)
+	}
+
+	{ // MARK: Cart routes //TODO: add middleware for auth and role
+		routes.NewCartRoute(api, logger, cartUsecase)
 	}
 
 	// authorizedAccess := api.Group("/", middlewares.AuthMiddleware(logger))
