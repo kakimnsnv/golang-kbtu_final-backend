@@ -50,7 +50,7 @@ func (r *ProductRepoImpl) GetProductByIDForUser(ctx context.Context, id string, 
 	var dbProduct product_entities.Product
 
 	const q = `
-	SELECT p.id, p.name, p.description, p.price, p.created_at, p.updated_at, p.deleted_at, (SELECT id FROM user_saveds WHERE user_id = $2 AND product_id = $1) IS NOT NULL AS is_liked
+	SELECT p.id, p.name, p.description,p.photo, p.price, p.created_at, p.updated_at, p.deleted_at, (SELECT id FROM user_saveds WHERE user_id = $2 AND product_id = $1) IS NOT NULL AS is_liked
 	FROM products p 
 	LEFT JOIN user_saveds s ON s.product_id = p.id 
 	LEFT JOIN users u ON u.id = s.user_id
@@ -68,7 +68,7 @@ func (r *ProductRepoImpl) GetAllProductsForUser(ctx context.Context, userID stri
 	dbProducts := []product_entities.Product{}
 
 	const q = `
-		SELECT p.id, p.name, p.description, p.price, p.created_at, p.updated_at, p.deleted_at, (SELECT id FROM user_saveds WHERE user_id = $1 AND product_id = p.id) IS NOT NULL AS is_liked
+		SELECT p.id, p.name, p.description, p.photo, p.price, p.created_at, p.updated_at, p.deleted_at, (SELECT id FROM user_saveds WHERE user_id = $1 AND product_id = p.id) IS NOT NULL AS is_liked
 		FROM products p 
 		LEFT JOIN user_saveds s ON s.product_id = p.id 
 		LEFT JOIN users u ON u.id = s.user_id
@@ -98,7 +98,7 @@ func (r *ProductRepoImpl) GetProductByID(ctx context.Context, id string) (produc
 	var dbProduct product_entities.Product
 
 	const q = `
-	SELECT id, name, description, price, created_at, updated_at, deleted_at
+	SELECT id, name, description, photo, price, created_at, updated_at, deleted_at
 	FROM products p 
 	WHERE p.id = $1`
 
@@ -121,7 +121,7 @@ func (r *ProductRepoImpl) GetAllProducts(ctx context.Context) ([]product_entitie
 	dbProducts := []product_entities.Product{}
 
 	const q = `
-	SELECT id, name, description, price, created_at, updated_at, deleted_at
+	SELECT id, name, description, photo, price, created_at, updated_at, deleted_at
 	FROM products 
 	WHERE deleted_at IS NULL`
 
@@ -133,10 +133,10 @@ func (r *ProductRepoImpl) GetAllProducts(ctx context.Context) ([]product_entitie
 }
 
 func (r *ProductRepoImpl) CreateProduct(ctx context.Context, product product_entities.ProductRequest) (product_entities.Product, error) {
-	const q = `INSERT INTO products (name, description, price) VALUES ($1, $2, $3) RETURNING *`
+	const q = `INSERT INTO products (name, description, price, photo) VALUES ($1, $2, $3, $4) RETURNING *`
 	var dbProduct product_entities.Product
 
-	if err := r.db.GetContext(ctx, &dbProduct, q, product.Name, product.Description, product.Price); err != nil {
+	if err := r.db.GetContext(ctx, &dbProduct, q, product.Name, product.Description, product.Price, product.Photo); err != nil {
 		r.logger.Error("error while creating product", zap.Error(err))
 		return dbProduct, err
 	}
@@ -153,9 +153,9 @@ func (r *ProductRepoImpl) CreateProduct(ctx context.Context, product product_ent
 }
 func (r *ProductRepoImpl) UpdateProduct(ctx context.Context, id string, product product_entities.ProductRequest) (product_entities.Product, error) {
 	var dbProduct product_entities.Product
-	const q = `UPDATE products SET name = $1, description = $2, price = $3 WHERE id = $4 RETURNING *`
+	const q = `UPDATE products SET name = $1, description = $2, price = $3 photo = $4 WHERE id = $5 RETURNING *`
 
-	if err := r.db.GetContext(ctx, &dbProduct, q, product.Name, product.Description, product.Price, id); err != nil {
+	if err := r.db.GetContext(ctx, &dbProduct, q, product.Name, product.Description, product.Price, product.Photo, id); err != nil {
 		r.logger.Error("error while updating product", zap.Error(err))
 		return dbProduct, err
 	}

@@ -18,11 +18,6 @@ const (
 )
 const RoleNone Role = 0
 
-var rolePermissions = map[Role][]string{
-	RoleAdmin: {"create", "read", "update", "delete"},
-	RoleUser:  {"read"},
-}
-
 func CreateJWT(userID string, role Role, expirationTime time.Duration) (string, error) {
 	claims := jwt.MapClaims{
 		consts.ClaimsUserID:    userID,

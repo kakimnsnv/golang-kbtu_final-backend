@@ -15,6 +15,7 @@ type (
 		ProductID    uuid.UUID `db:"product_id" json:"product_id" binding:"required,uuid"`
 		ProductName  string    `db:"product_name" json:"product_name" binding:"required"`
 		ProductPrice float64   `db:"product_price" json:"product_price" binding:"required"`
+		ProductPhoto string    `db:"product_photo" json:"product_photo" binding:"required"`
 		Quantity     int       `db:"quantity" json:"quantity" binding:"required"`
 		TotalPrice   float64   `db:"total_price" json:"total_price" binding:"required"`
 	}

@@ -38,7 +38,7 @@ func (r *CartRepoForOrderImpl) GetCart(ctx context.Context, userID string) (*car
 	}
 
 	const queryCartItems = `
-		SELECT ci.id, ci.product_id, p.name AS product_name, p.price AS product_price, quantity, quantity * p.price AS total_price
+		SELECT ci.id, ci.product_id, p.name AS product_name, p.price AS product_price, p.photo AS product_photo, quantity, quantity * p.price AS total_price
 		FROM cart_items ci 
 		LEFT JOIN products p ON p.id = ci.product_id 
 		WHERE cart_id = $1

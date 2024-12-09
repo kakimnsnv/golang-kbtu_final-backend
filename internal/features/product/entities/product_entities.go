@@ -11,6 +11,7 @@ type (
 	Product struct {
 		ID          uuid.UUID    `db:"id" json:"id" binding:"required,uuid"`
 		Name        string       `db:"name" json:"name" binding:"required"`
+		Photo       string       `db:"photo" json:"photo" binding:"required"`
 		Description string       `db:"description" json:"description" binding:"required"`
 		Price       float64      `db:"price" json:"price" binding:"required"`
 		IsLiked     bool         `db:"is_liked" json:"is_liked" binding:"required"`
@@ -23,5 +24,6 @@ type (
 		Name        string  `json:"name" binding:"required"`
 		Description string  `json:"description" binding:"required"`
 		Price       float64 `json:"price" binding:"required"`
+		Photo       string  `json:"photo" binding:"required"`
 	}
 )

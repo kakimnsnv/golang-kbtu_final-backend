@@ -25,7 +25,7 @@ type (
 		Email        string    `db:"email" json:"email" binding:"required,email"`
 		PasswordHash string    `db:"password_hash" json:"-" binding:"required"`
 		Role         auth.Role `db:"role" json:"role" binding:"required"`
-		CreatedAt    time.Time `db:"created_at" json:"created_at" binding:"required"`
-		UpdatedAt    time.Time `db:"updated_at" json:"updated_at" binding:"required"`
+		CreatedAt    time.Time `db:"created_at" json:"-" binding:"required"`
+		UpdatedAt    time.Time `db:"updated_at" json:"-" binding:"required"`
 	}
 )
