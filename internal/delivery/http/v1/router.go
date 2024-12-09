@@ -5,6 +5,7 @@ import (
 	"final/internal/delivery/http/v1/routes"
 	auth_interface "final/internal/features/auth/interface"
 	cart_interface "final/internal/features/cart/interface"
+	order_interface "final/internal/features/order/interface"
 	product_interface "final/internal/features/product/interface"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,13 @@ import (
 )
 
 // RegisterRoutes registers the API routes.
-func NewRouter(logger *zap.Logger, authUsecase auth_interface.AuthUsecase, productUsecase product_interface.ProductUseCase, cartUsecase cart_interface.CartUsecase) *gin.Engine {
+func NewRouter(
+	logger *zap.Logger,
+	authUsecase auth_interface.AuthUsecase,
+	productUsecase product_interface.ProductUseCase,
+	cartUsecase cart_interface.CartUsecase,
+	orderUsecase order_interface.OrderUsecase,
+) *gin.Engine {
 	// MARK: create Router
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
@@ -42,19 +49,13 @@ func NewRouter(logger *zap.Logger, authUsecase auth_interface.AuthUsecase, produ
 		routes.NewProductRoute(api, logger, productUsecase)
 	}
 
-	{ // MARK: Cart routes //TODO: add middleware for auth and role
+	{ // MARK: Cart routes
 		routes.NewCartRoute(api, logger, cartUsecase)
 	}
 
-	// authorizedAccess := api.Group("/", middlewares.AuthMiddleware(logger))
-	// {
-	// 	authorizedAccess.GET("/admin", middlewares.RoleMiddleware(logger, auth.RoleAdmin), func(c *gin.Context) {
-	// 		c.JSON(200, gin.H{"message": "Admin access granted"})
-	// 	})
+	{ // MARK: Order routes
+		routes.NewOrderRoute(api, orderUsecase, logger)
+	}
 
-	// 	authorizedAccess.GET("/dashboard", middlewares.RoleMiddleware(logger, auth.RoleUser|auth.RoleAdmin), func(c *gin.Context) {
-	// 		c.JSON(200, gin.H{"message": "Welcom User or Admin!"})
-	// 	})
-	// }
 	return router
 }

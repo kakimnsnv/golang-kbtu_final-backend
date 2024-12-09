@@ -21,4 +21,9 @@ type (
 		UpdateCart(ctx context.Context, userID, productID string, quantity int) error
 		DeleteCart(ctx context.Context, userID string) error
 	}
+
+	CartRepoForOrderUsecase interface {
+		GetCart(ctx context.Context, userID string) (*cart_entities.Cart, error)
+		DeleteCart(ctx context.Context, userID string) error
+	}
 )

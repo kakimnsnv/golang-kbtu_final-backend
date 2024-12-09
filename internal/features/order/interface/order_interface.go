@@ -27,17 +27,18 @@ type (
 	OrderRepo interface {
 		CreateOrder(ctx context.Context, userID string, totalAmount float64) (string, error)
 		CreateOrderItem(ctx context.Context, orderID, productID string, quantity int, price float64) (string, error)
-		UpdateOrderStatus(ctx context.Context, orderID string, status int) error
+		UpdateOrderStatus(ctx context.Context, orderID string, status order_entities.OrderStatus) error
 		DeleteOrder(ctx context.Context, orderID string) error
 		GetOrder(ctx context.Context, orderID string) (order_entities.Order, error)
 		GetOrdersOfUser(ctx context.Context, userID string) ([]order_entities.Order, error)
+		CreateOrderItemsBatch(ctx context.Context, orderItems []order_entities.OrderItem) error
 	}
 
 	OrderUsecase interface {
-		PlaceOrder(ctx context.Context, userID string, cartID string) (string, error)
+		PlaceOrder(ctx context.Context, userID string) (string, error)
 		GetOrder(ctx context.Context, orderID string) (order_entities.Order, error)
 		GetOrders(ctx context.Context, userID string) ([]order_entities.Order, error)
 		CancelOrder(ctx context.Context, orderID string) error
-		ChangeOrderStatus(ctx context.Context, orderID string, status int) error
+		ChangeOrderStatus(ctx context.Context, orderID string, status order_entities.OrderStatus) error
 	}
 )

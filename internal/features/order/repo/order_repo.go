@@ -2,7 +2,6 @@ package order_repo
 
 import (
 	"context"
-	"database/sql"
 	order_entities "final/internal/features/order/entities"
 	order_interface "final/internal/features/order/interface"
 
@@ -49,9 +48,7 @@ func (r *OrderRepoImpl) CreateOrderItem(ctx context.Context, orderID, productID 
 func (r *OrderRepoImpl) CreateOrderItemsBatch(ctx context.Context, orderItems []order_entities.OrderItem) error {
 	const q = `INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (:order_id, :product_id, :quantity, :price)`
 
-	tx, err := r.db.BeginTxx(ctx, &sql.TxOptions{
-		Isolation: sql.,
-	})
+	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		r.logger.Error("failed to begin transaction", zap.Error(err))
 		return err
@@ -80,7 +77,7 @@ func (r *OrderRepoImpl) CreateOrderItemsBatch(ctx context.Context, orderItems []
 	return nil
 }
 
-func (r *OrderRepoImpl) UpdateOrderStatus(ctx context.Context, orderID string, status int) error {
+func (r *OrderRepoImpl) UpdateOrderStatus(ctx context.Context, orderID string, status order_entities.OrderStatus) error {
 	const q = `UPDATE orders SET status = $1 WHERE id = $2`
 	if _, err := r.db.ExecContext(ctx, q, status, orderID); err != nil {
 		r.logger.Error("failed to update order status", zap.Error(err))
@@ -112,7 +109,7 @@ func (r *OrderRepoImpl) GetOrder(ctx context.Context, orderID string) (order_ent
 func (r *OrderRepoImpl) GetOrdersOfUser(ctx context.Context, userID string) ([]order_entities.Order, error) {
 	const q = `SELECT * FROM orders WHERE user_id = $1`
 
-	var orders []order_entities.Order
+	orders := []order_entities.Order{}
 	if err := r.db.SelectContext(ctx, &orders, q, userID); err != nil {
 		r.logger.Error("failed to get orders of user", zap.Error(err))
 		return nil, err

@@ -17,6 +17,9 @@ import (
 	cart_interface "final/internal/features/cart/interface"
 	cart_repo "final/internal/features/cart/repo"
 	cart_usecase "final/internal/features/cart/usecase"
+	order_interface "final/internal/features/order/interface"
+	order_repo "final/internal/features/order/repo"
+	order_usecase "final/internal/features/order/usecase"
 	product_interface "final/internal/features/product/interface"
 	product_repo "final/internal/features/product/repo"
 	product_usecase "final/internal/features/product/usecase"
@@ -54,8 +57,20 @@ func main() {
 				fx.As(new(cart_interface.CartRepo)),
 			),
 			fx.Annotate(
+				cart_repo.NewCartRepoForOrder,
+				fx.As(new(cart_interface.CartRepoForOrderUsecase)),
+			),
+			fx.Annotate(
 				cart_usecase.New,
 				fx.As(new(cart_interface.CartUsecase)),
+			),
+			fx.Annotate(
+				order_repo.New,
+				fx.As(new(order_interface.OrderRepo)),
+			),
+			fx.Annotate(
+				order_usecase.New,
+				fx.As(new(order_interface.OrderUsecase)),
 			),
 			http_v1.NewRouter,
 			postgres.ConnectDB,
